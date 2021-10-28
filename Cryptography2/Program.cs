@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Numerics;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 
@@ -6,74 +8,60 @@ namespace Cryptography2
 {
     class Program
     {
-        static long Power(long a, int b)
+       static bool IsSimple(BigInteger a)
         {
-            if (b == 0)
-            {
-                return 1;
-            }
-            if (b % 2 == 0)
-            {
-                var p = Power(a, b / 2);
-                return p * p;
-            }
-            else
-            {
-                return a * Power(a, b - 1);
-            }
-        }
-        static bool IsSimple(long a)
-        {
-            for (long i = 2; i <= Math.Sqrt(a); i++)
+            for (long i = 2; i * i <= a; i++)
                 if (a % i == 0)
                     return false;
             return true;
-        }
-        /*static int Phi(long n)
-        {
-            int ret = 1;
-            for (int i = 2; i * i <= n; i++)
-            {
-                int p = 1;
-                while (n % 1 == 0)
-                {
-                    p *= i;
-                    n /= i;
-                }
-                if ((p /= i) >= 1)
-                {
-                    ret *= p * (i - 1);
-                }
-            }
-            return --n ? n * ret : ret;
-        }*/
+        } 
+       static ulong gcd(ulong a, ulong b, out ulong  x, out ulong y)
+       {
+           if (a == 0) {
+               x = 0; y = 1;
+               return b;
+           }
+           var d = gcd (b%a, a, out var x1, out var y1);
+           x = y1 - (b / a) * x1;
+           y = x1;
+           return d;
+       }
 
-        static bool IsPrimitiveRoot(long p, long q)
-        {
-            for (int i = 2; i < p - 1; i++)
-            {
+       static void generate()
+       {
+           uint p, q;
+           do
+           {
+               Console.Write("Введите простое число p: ");
+               p = Convert.ToUInt32(Console.ReadLine());
+           } while (!IsSimple(p));
+           
+           do
+           {
+               Console.Write("Введите простое число q: ");
+               q = Convert.ToUInt32(Console.ReadLine());
+           } while (!IsSimple(q));
+           
+           ulong n = (ulong)p * q;
+           ulong phi = (ulong)(p - 1) * (q - 1);
+           ulong e, d, x;
+           do
+           {
+               Console.WriteLine($"Введите e, такое что 1 < e < {phi}");
+               e = Convert.ToUInt64(Console.ReadLine());
+           } while (e <= 1 || e >= phi || gcd(e, phi, out d, out x) != 1);
 
-            }
-
-            return true;
-        }
+           d = phi + d;
+           
+           Console.WriteLine($"Открытый ключ: ( {e} , {n} )");
+           Console.WriteLine($"Закрытый ключ: ( {d} , {n} )");
+       }
         
+
         static void Main(string[] args)
         {
-            long p, q;
-            int n = 2;
-            p = Convert.ToInt64(Console.ReadLine());
-            q = Convert.ToInt64(Console.ReadLine());
-            if (IsSimple(p))
-            {
-                //Console.WriteLine(Phi(p));
-                Console.WriteLine(Power(p, n));
-            }
-            else
-            {
-                Console.WriteLine("Число ", p, " - не простое");
-            }
-
+            generate();
+            
 
         }
     }
