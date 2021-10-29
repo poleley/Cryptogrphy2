@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 
 namespace Cryptography2
 {
@@ -16,12 +17,37 @@ namespace Cryptography2
 
         static string ToBinary(ulong num)
         {
+            var res = new StringBuilder();
+            var binary = new StringBuilder();
+            ulong ost;
+            while (num > 1)
+            {
+                ost = num % 2;
+                num = num / 2;
+                if (ost == 1)
+                {
+                    res.Append('1');
+                }
+                else
+                {
+                    res.Append('0');
+                }
+            }
+
             if (num == 1)
-                return "1";
-            return ToBinary(num / 2) + ToBinary(num % 2);
+            {
+                res.Append('1');
+            }
+            res.ToString();
+            for (var i = res.Length - 1; i >= 0; i--)
+            {
+                binary.Append(res[i]);
+            }
+            
+            return binary.ToString();
         }
 
-        static BigInteger Power(ulong a, ulong n, ulong mod = 0)
+        static BigInteger Power(ulong a, ulong n, ulong mod)
         {
             var m = ToBinary(n);
             BigInteger res = a;
@@ -76,14 +102,18 @@ namespace Cryptography2
             } while (!IsSimple(q));
 
             ulong n = (ulong) p * q;
-            ulong phi = (ulong) (p - 1) * (q - 1);
-            ulong e, d, x;
+            ulong x, y;
+            ulong gcd = Gcd(p - 1, q - 1, out x, out y);
+            ulong phi = (ulong) (p - 1) * (q - 1) / gcd;
+
+
+            ulong e, d;
             do
             {
-                Console.WriteLine($"Введите e, такое что 1 < e < {phi}");
+                Console.WriteLine($"Введите e, такое что 1 < e < {phi} и взаимно простое с {phi}");
                 e = Convert.ToUInt64(Console.ReadLine());
             } while (e <= 1 || e >= phi || Gcd(e, phi, out d, out x) != 1);
-
+            
             d = phi + d;
 
             Console.WriteLine($"Открытый ключ: ( {e} , {n} )");
@@ -97,9 +127,10 @@ namespace Cryptography2
             e = Convert.ToUInt64(Console.ReadLine());
             Console.Write("Введите n: ");
             n = Convert.ToUInt64(Console.ReadLine());
-            Console.Write($"Введите сообщение m, такое что 0 < m < {n - 1}: ");
+            Console.Write($"Введите сообщение m, такое что 0 <= m < {n}: ");
             m = Convert.ToUInt64(Console.ReadLine());
             Console.WriteLine($"Зашифрованное сообщение: {Power(m, e, n)}");
+            
         }
 
         static void Decrypt()
@@ -120,10 +151,10 @@ namespace Cryptography2
             int choose;
             do
             {
-                Console.WriteLine("Generate - 1");
-                Console.WriteLine("Encrypt - 2");
-                Console.WriteLine("Decrypt - 3");
-                Console.WriteLine("Exit - 0");
+                Console.WriteLine("Генерация ключей - 1");
+                Console.WriteLine("Зашифровка сообщения - 2");
+                Console.WriteLine("Расшифровка сообщения - 3");
+                Console.WriteLine("Выход - 0");
                 choose = Convert.ToInt32(Console.ReadLine());
                 switch (choose)
                 {
